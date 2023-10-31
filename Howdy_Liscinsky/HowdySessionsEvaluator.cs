@@ -18,38 +18,29 @@
             var results = GetEvaluationResults(sessionsForEvaluation);
             //...some additional processing of results
         }
-        private List<EvaluationResult> GetEvaluationResults(IEnumerable<Session> sessionsForEvaluation)
+        private IEnumerable<EvaluationResult> GetEvaluationResults(IEnumerable<Session> sessionsForEvaluation)
         {
             var results = new List<EvaluationResult>();
-            var sessionsByYear = sessionsForEvaluation.GroupBy(a => a.Year).OrderBy(a => a.Key);
-            foreach (var sessionsInYear in sessionsByYear)
+            var evaluationResults = sessionsForEvaluation.GroupBy(a => new { a.Year, a.Month, a.groupId })
+                .Select(a =>
             {
-                Console.WriteLine($"=========================================");
-                Console.WriteLine($"Year: {sessionsInYear.Key}");
-                var sessionsByMonth = sessionsInYear.GroupBy(a => a.Month).OrderBy(a => a.Key);
-                foreach (var sessionsInMonth in sessionsByMonth)
+                //var score = a.Average(d=>d.SessionScore);
+                var score = a.GroupBy(session => session.employeeId).Select(employeeSessions => employeeSessions.Average(f => f.SessionScore)).Average();
+                return new EvaluationResult()
                 {
-                    Console.WriteLine($"---------------------------------------");
-                    Console.WriteLine($"Month: {sessionsInMonth.Key}");
-                    var sessionsbyGroup = sessionsInMonth.GroupBy(a => a.groupId).OrderBy(a => a.Key);
-                    foreach (var sessionsOfGroup in sessionsbyGroup)
-                    {
-                        var groupScoreSum = sessionsOfGroup.Sum(a => a.SessionScore);
-                        var numberOfSessions = sessionsOfGroup.Count();
-                        var resultGroupScore = groupScoreSum / numberOfSessions;
-                        var monthlyResultOfGroup = new EvaluationResult()
-                        {
-                            GroupId = sessionsOfGroup.Key,
-                            Year = sessionsInYear.Key,
-                            Month = sessionsInMonth.Key,
-                            Score = resultGroupScore
-                        };
-                        results.Add(monthlyResultOfGroup);
-                        Console.WriteLine($"    Group {sessionsOfGroup.Key}: \tScore: {resultGroupScore}\tSessions({numberOfSessions})");
-                    }
-                }
+                    Year = a.Key.Year,
+                    Month = a.Key.Month,
+                    GroupId = a.Key.groupId,
+                    Score = score
+                };
+            }).OrderBy(a => a.Year).ThenBy(b => b.Month).ThenBy(c => c.GroupId);
+
+            foreach (var res in evaluationResults)
+            {
+                Console.WriteLine($"Year: {res.Year}, Month: {res.Month}, GroupId: {res.GroupId}, Score: {res.Score}");
             }
-            return results;
+
+            return evaluationResults;
         }
     }
 }
