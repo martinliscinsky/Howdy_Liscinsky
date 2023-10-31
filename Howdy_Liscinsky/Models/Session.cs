@@ -11,7 +11,7 @@
         public int answer4 { get; set; }
         public int answer5 { get; set; }
 
-        public double SessionScore { get { return (answer1 + answer2 + answer3 + answer4 + answer5) / 5; } }
+        public float SessionScore { get { return (answer1 + answer2 + answer3 + answer4 + answer5) / 5; } }
         public int Month { get { return answeredOn.Month; } }
         public int Year { get { return answeredOn.Year; } }
     }

@@ -5,6 +5,6 @@
         public int GroupId { get; set; }
         public int Year { get; set; }
         public int Month { get; set; }
-        public double Score { get; set; }
+        public float Score { get; set; }
     }
 }
